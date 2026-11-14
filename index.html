@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alloc.io — Smart Budget Calculator</title>
+    <title>Budget.in — Smart Budget Calculator</title>
     
     <!-- Tailwind CSS v3 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,9 +38,14 @@
 
     <!-- Top Navigation / Controls Bar -->
     <header class="w-full max-w-xl mx-auto px-6 pt-8 flex justify-between items-center">
-        <span class="text-xs font-mono font-medium tracking-wider text-zinc-400 dark:text-zinc-500 uppercase">alloc.io // v1.3</span>
+        <span class="text-xs font-mono font-medium tracking-wider text-zinc-400 dark:text-zinc-500 uppercase">budget.in // v1.4</span>
         
         <div class="flex items-center gap-2">
+            <!-- Sound Effect Toggle Button -->
+            <button onclick="toggleSound()" id="btn-sound" class="p-2 rounded-lg bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all text-xs flex items-center justify-center" title="Suara Interaksi">
+                <svg id="sound-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+            </button>
+
             <!-- Dark/Light Mode Toggle Button -->
             <button onclick="toggleTheme()" class="p-2 rounded-lg bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all text-xs flex items-center justify-center" title="Ubah Tema">
                 <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
@@ -60,25 +65,24 @@
         
         <!-- Heading Section -->
         <div class="mb-8">
-            <h1 id="ui-title" class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Kalkulator Budget 50/30/20</h1>
+            <h1 id="ui-title" class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Budget.in</h1>
             <p id="ui-subtitle" class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Hitung alokasi pengeluaran bulanan secara proporsional atau kustom.</p>
         </div>
 
         <!-- Calculator Card -->
         <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-sm p-6 sm:p-8 space-y-6 transition-colors duration-200">
             
-            <!-- Input Field: Pendapatan dengan Pemisah Titik Otomatis -->
+            <!-- Input Field: Pendapatan -->
             <div>
                 <label id="ui-label-income" for="incomeInput" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">Total Pendapatan Bulanan</label>
                 <div class="relative flex items-center">
                     <span id="ui-currency-symbol" class="absolute left-4 text-sm font-semibold text-zinc-400 dark:text-zinc-500">Rp</span>
-                    <!-- Menggunakan type="text" agar format titik (.) bisa dikontrol dengan mulus via JS -->
-                    <input type="text" id="incomeInput" placeholder="Contoh: 5.000.000" oninput="formatIncomeInput(this)"
+                    <input type="text" id="incomeInput" placeholder="Contoh: 5.000.000" oninput="handleIncomeInput(this)"
                         class="w-full pl-12 pr-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-sm font-medium font-mono">
                 </div>
             </div>
 
-            <!-- Fitur Tambahan: Mode Alokasi (Standar vs Kustom) -->
+            <!-- Mode Alokasi -->
             <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800">
                 <div class="flex justify-between items-center mb-3">
                     <label id="ui-label-mode" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Mode Alokasi</label>
@@ -95,7 +99,7 @@
                 </div>
             </div>
 
-            <!-- Slider / Input Persentase Kustom -->
+            <!-- Custom Sliders -->
             <div id="customSlidersContainer" class="hidden space-y-4 pt-2 bg-zinc-50/50 dark:bg-zinc-800/30 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
                 <div class="space-y-2">
                     <div class="flex justify-between text-xs font-medium">
@@ -171,14 +175,14 @@
     <!-- Footer Otentik dengan Nama Lengkap -->
     <footer class="w-full max-w-xl mx-auto px-6 py-8 border-t border-zinc-200/60 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
         <span>Dibuat oleh <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">Nabila Belva Fawnia</strong></span>
-        <span class="font-mono text-[11px] text-zinc-400 dark:text-zinc-500">© 2026 — Alloc.io</span>
+        <span class="font-mono text-[11px] text-zinc-400 dark:text-zinc-500">© 2026 — Budget.in</span>
     </footer>
 
     <!-- Skrip Utama -->
     <script>
         const translationDict = {
             id: {
-                title: "Kalkulator Budget 50/30/20",
+                title: "Budget.in",
                 subtitle: "Hitung alokasi pengeluaran bulanan secara proporsional atau kustom.",
                 labelIncome: "Total Pendapatan Bulanan",
                 currency: "Rp",
@@ -203,7 +207,7 @@
                 warnSlider: "Total persentase harus pas 100% ya!"
             },
             en: {
-                title: "50/30/20 Budget Calculator",
+                title: "Budget.in",
                 subtitle: "Calculate your monthly expense allocation proportionally or custom.",
                 labelIncome: "Total Monthly Income",
                 currency: "$",
@@ -228,7 +232,7 @@
                 warnSlider: "Total percentage must equal 100%!"
             },
             zh: {
-                title: "50/30/20 预算分配计算器",
+                title: "Budget.in",
                 subtitle: "按比例或自定义计算您的每月开支分配方案。",
                 labelIncome: "每月总收入",
                 currency: "¥",
@@ -260,21 +264,88 @@
         let customPct1 = 50;
         let customPct2 = 30;
         let customPct3 = 20;
+        let soundEnabled = true;
 
-        // Format angka saat diketik di input (menambahkan titik ribuan otomatis)
-        function formatIncomeInput(inputElement) {
-            // Hapus semua karakter selain angka
+        // Web Audio API untuk Efek Suara Mekanis Real-Time (Tanpa file eksternal)
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playClickSound() {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.04);
+
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            } catch (e) {
+                // Ignore silent browser audio restrictions
+            }
+        }
+
+        function playTypeSound() {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800 + Math.random() * 200, audioCtx.currentTime);
+
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.02);
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('btn-sound');
+            if (soundEnabled) {
+                btn.classList.remove('opacity-50');
+                playClickSound();
+            } else {
+                btn.classList.add('opacity-50');
+            }
+        }
+
+        // Input & Format Handler
+        function handleIncomeInput(inputElement) {
+            playTypeSound();
             let rawValue = inputElement.value.replace(/\D/g, '');
             if (rawValue === '') {
                 inputElement.value = '';
                 return;
             }
-            // Format ke pemisah ribuan titik
-            let formattedValue = new Intl.NumberFormat('id-ID').format(rawValue);
-            inputElement.value = formattedValue;
+            inputElement.value = new Intl.NumberFormat('id-ID').format(rawValue);
         }
 
-        // Ambil nilai angka murni dari input yang berformat titik
         function getCleanIncomeValue() {
             const rawValue = document.getElementById('incomeInput').value;
             if (!rawValue) return 0;
@@ -283,6 +354,7 @@
 
         // Toggle Theme
         function toggleTheme() {
+            playClickSound();
             const htmlEl = document.documentElement;
             if (htmlEl.classList.contains('dark')) {
                 htmlEl.classList.remove('dark');
@@ -298,6 +370,7 @@
         }
 
         function setAllocationMode(mode) {
+            playClickSound();
             allocationMode = mode;
             const btnStd = document.getElementById('mode-standard');
             const btnCust = document.getElementById('mode-custom');
@@ -332,6 +405,7 @@
         }
 
         function updateCustomSliders(changedIndex) {
+            playTypeSound();
             let s1 = parseInt(document.getElementById('slider-1').value);
             let s2 = parseInt(document.getElementById('slider-2').value);
             let s3 = parseInt(document.getElementById('slider-3').value);
@@ -354,6 +428,7 @@
         }
 
         function switchLanguage(langCode) {
+            playClickSound();
             activeLang = langCode;
 
             ['id', 'en', 'zh'].forEach(code => {
@@ -392,6 +467,7 @@
         }
 
         function processCalculation() {
+            playClickSound();
             const incomeValue = getCleanIncomeValue();
 
             if (isNaN(incomeValue) || incomeValue <= 0) {
