@@ -1,22 +1,30 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>50/30/20 Budget Calculator</title>
+    <title>Alloc.io — Smart Budget Calculator</title>
     
-    <!-- Tailwind CSS v3 CDN (Ringan dan stabil untuk production statis) -->
+    <!-- Tailwind CSS v3 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
     
-    <!-- Google Fonts: Plus Jakarta Sans untuk keterbacaan optimal -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <style>
-        /* Custom font setup */
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        /* Efek transisi halus manual */
         .fade-in {
             animation: fadeIn 0.3s ease-in-out forwards;
         }
@@ -26,17 +34,24 @@
         }
     </style>
 </head>
-<body class="bg-zinc-50 text-zinc-900 antialiased min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white transition-colors duration-200">
 
-    <!-- Top Navigation / Language Bar -->
+    <!-- Top Navigation / Controls Bar -->
     <header class="w-full max-w-xl mx-auto px-6 pt-8 flex justify-between items-center">
-        <span class="text-xs font-mono font-medium tracking-wider text-zinc-400 uppercase">util.tool</span>
+        <span class="text-xs font-mono font-medium tracking-wider text-zinc-400 dark:text-zinc-500 uppercase">alloc.io // v1.3</span>
         
-        <!-- Toggle Bahasa -->
-        <div class="inline-flex bg-zinc-200/80 p-1 rounded-lg text-xs font-medium">
-            <button onclick="switchLanguage('id')" id="btn-id" class="px-3 py-1 rounded-md transition-all bg-white text-zinc-900 shadow-sm">ID</button>
-            <button onclick="switchLanguage('en')" id="btn-en" class="px-3 py-1 rounded-md transition-all text-zinc-600 hover:text-zinc-900">EN</button>
-            <button onclick="switchLanguage('zh')" id="btn-zh" class="px-3 py-1 rounded-md transition-all text-zinc-600 hover:text-zinc-900">中文</button>
+        <div class="flex items-center gap-2">
+            <!-- Dark/Light Mode Toggle Button -->
+            <button onclick="toggleTheme()" class="p-2 rounded-lg bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all text-xs flex items-center justify-center" title="Ubah Tema">
+                <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            </button>
+
+            <!-- Language Toggle -->
+            <div class="inline-flex bg-zinc-200/80 dark:bg-zinc-800 p-1 rounded-lg text-xs font-medium">
+                <button onclick="switchLanguage('id')" id="btn-id" class="px-3 py-1 rounded-md transition-all bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm">ID</button>
+                <button onclick="switchLanguage('en')" id="btn-en" class="px-3 py-1 rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">EN</button>
+                <button onclick="switchLanguage('zh')" id="btn-zh" class="px-3 py-1 rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100">中文</button>
+            </div>
         </div>
     </header>
 
@@ -45,61 +60,107 @@
         
         <!-- Heading Section -->
         <div class="mb-8">
-            <h1 id="ui-title" class="text-2xl font-bold tracking-tight text-zinc-900">Kalkulator Budget 50/30/20</h1>
-            <p id="ui-subtitle" class="text-sm text-zinc-500 mt-1">Hitung alokasi pengeluaran bulanan secara proporsional dan mudah.</p>
+            <h1 id="ui-title" class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Kalkulator Budget 50/30/20</h1>
+            <p id="ui-subtitle" class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Hitung alokasi pengeluaran bulanan secara proporsional atau kustom.</p>
         </div>
 
         <!-- Calculator Card -->
-        <div class="bg-white rounded-2xl border border-zinc-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-sm p-6 sm:p-8 space-y-6 transition-colors duration-200">
             
-            <!-- Input Field -->
+            <!-- Input Field: Pendapatan dengan Pemisah Titik Otomatis -->
             <div>
-                <label id="ui-label-income" for="incomeInput" class="block text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-2">Total Pendapatan Bulanan</label>
+                <label id="ui-label-income" for="incomeInput" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">Total Pendapatan Bulanan</label>
                 <div class="relative flex items-center">
-                    <span id="ui-currency-symbol" class="absolute left-4 text-sm font-semibold text-zinc-400">Rp</span>
-                    <input type="number" id="incomeInput" placeholder="Contoh: 5000000" 
-                        class="w-full pl-12 pr-4 py-3 bg-zinc-50/50 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-sm font-medium">
+                    <span id="ui-currency-symbol" class="absolute left-4 text-sm font-semibold text-zinc-400 dark:text-zinc-500">Rp</span>
+                    <!-- Menggunakan type="text" agar format titik (.) bisa dikontrol dengan mulus via JS -->
+                    <input type="text" id="incomeInput" placeholder="Contoh: 5.000.000" oninput="formatIncomeInput(this)"
+                        class="w-full pl-12 pr-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-sm font-medium font-mono">
                 </div>
+            </div>
+
+            <!-- Fitur Tambahan: Mode Alokasi (Standar vs Kustom) -->
+            <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                <div class="flex justify-between items-center mb-3">
+                    <label id="ui-label-mode" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Mode Alokasi</label>
+                    <span id="ui-mode-desc" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">Standar (50 / 30 / 20)</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setAllocationMode('standard')" id="mode-standard" class="py-2.5 px-3 text-xs font-medium rounded-xl border border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 transition-all text-center">
+                        Standar (50/30/20)
+                    </button>
+                    <button onclick="setAllocationMode('custom')" id="mode-custom" class="py-2.5 px-3 text-xs font-medium rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 transition-all text-center">
+                        Atur Sendiri (%)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slider / Input Persentase Kustom -->
+            <div id="customSlidersContainer" class="hidden space-y-4 pt-2 bg-zinc-50/50 dark:bg-zinc-800/30 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs font-medium">
+                        <span id="ui-slider-1-label" class="text-zinc-600 dark:text-zinc-400">Kebutuhan Pokok</span>
+                        <span id="val-pct-1" class="font-mono font-bold text-indigo-600 dark:text-indigo-400">50%</span>
+                    </div>
+                    <input type="range" id="slider-1" min="10" max="80" value="50" oninput="updateCustomSliders(1)" class="w-full accent-indigo-600 cursor-pointer">
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs font-medium">
+                        <span id="ui-slider-2-label" class="text-zinc-600 dark:text-zinc-400">Keinginan</span>
+                        <span id="val-pct-2" class="font-mono font-bold text-amber-600 dark:text-amber-400">30%</span>
+                    </div>
+                    <input type="range" id="slider-2" min="5" max="60" value="30" oninput="updateCustomSliders(2)" class="w-full accent-amber-500 cursor-pointer">
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs font-medium">
+                        <span id="ui-slider-3-label" class="text-zinc-600 dark:text-zinc-400">Tabungan</span>
+                        <span id="val-pct-3" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">20%</span>
+                    </div>
+                    <input type="range" id="slider-3" min="5" max="60" value="20" oninput="updateCustomSliders(3)" class="w-full accent-emerald-500 cursor-pointer">
+                </div>
+                <p id="ui-slider-warning" class="text-[11px] text-amber-600 dark:text-amber-400 hidden">Total persentase harus pas 100% ya.</p>
             </div>
 
             <!-- Action Button -->
             <button onclick="processCalculation()" id="ui-btn-calculate"
-                class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium py-3 rounded-xl transition-all text-sm shadow-sm active:scale-[0.99]">
+                class="w-full bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium py-3 rounded-xl transition-all text-sm shadow-sm active:scale-[0.99]">
                 Hitung Alokasi
             </button>
 
-            <!-- Results Section (Hidden by default) -->
-            <div id="resultContainer" class="hidden space-y-4 pt-4 border-t border-zinc-100 fade-in">
-                <h2 id="ui-result-heading" class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Hasil Alokasi Ideal</h2>
+            <!-- Results Section -->
+            <div id="resultContainer" class="hidden space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 fade-in">
+                <h2 id="ui-result-heading" class="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Hasil Alokasi Ideal</h2>
                 
-                <!-- 50% Needs -->
-                <div class="bg-zinc-50/60 p-4 rounded-xl border border-zinc-100 flex justify-between items-center">
+                <!-- Category 1 -->
+                <div class="bg-zinc-50/60 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
                     <div>
-                        <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">50%</span>
-                        <p id="ui-cat-1" class="text-sm font-semibold text-zinc-800 mt-1">Kebutuhan Pokok</p>
-                        <p id="ui-desc-1" class="text-xs text-zinc-500">Makan, sewa, listrik, transport</p>
+                        <span id="badge-pct-1" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-md">50%</span>
+                        <p id="ui-cat-1" class="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mt-1">Kebutuhan Pokok</p>
+                        <p id="ui-desc-1" class="text-xs text-zinc-500 dark:text-zinc-400">Makan, sewa, listrik, transport</p>
                     </div>
-                    <span id="val-needs" class="text-sm sm:text-base font-bold text-zinc-900">0</span>
+                    <span id="val-needs" class="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono">0</span>
                 </div>
 
-                <!-- 30% Wants -->
-                <div class="bg-zinc-50/60 p-4 rounded-xl border border-zinc-100 flex justify-between items-center">
+                <!-- Category 2 -->
+                <div class="bg-zinc-50/60 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
                     <div>
-                        <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">30%</span>
-                        <p id="ui-cat-2" class="text-sm font-semibold text-zinc-800 mt-1">Keinginan / Lifestyle</p>
-                        <p id="ui-desc-2" class="text-xs text-zinc-500">Nongkrong, hiburan, belanja</p>
+                        <span id="badge-pct-2" class="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md">30%</span>
+                        <p id="ui-cat-2" class="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mt-1">Keinginan / Lifestyle</p>
+                        <p id="ui-desc-2" class="text-xs text-zinc-500 dark:text-zinc-400">Nongkrong, hiburan, belanja</p>
                     </div>
-                    <span id="val-wants" class="text-sm sm:text-base font-bold text-zinc-900">0</span>
+                    <span id="val-wants" class="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono">0</span>
                 </div>
 
-                <!-- 20% Savings -->
-                <div class="bg-zinc-50/60 p-4 rounded-xl border border-zinc-100 flex justify-between items-center">
+                <!-- Category 3 -->
+                <div class="bg-zinc-50/60 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
                     <div>
-                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">20%</span>
-                        <p id="ui-cat-3" class="text-sm font-semibold text-zinc-800 mt-1">Tabungan & Investasi</p>
-                        <p id="ui-desc-3" class="text-xs text-zinc-500">Dana darurat, reksa dana, tabungan</p>
+                        <span id="badge-pct-3" class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md">20%</span>
+                        <p id="ui-cat-3" class="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mt-1">Tabungan & Investasi</p>
+                        <p id="ui-desc-3" class="text-xs text-zinc-500 dark:text-zinc-400">Dana darurat, reksa dana, tabungan</p>
                     </div>
-                    <span id="val-savings" class="text-sm sm:text-base font-bold text-zinc-900">0</span>
+                    <span id="val-savings" class="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono">0</span>
                 </div>
             </div>
 
@@ -107,22 +168,21 @@
 
     </main>
 
-    <!-- Footer dengan Tanda Kepemilikan Asli -->
-    <footer class="w-full max-w-xl mx-auto px-6 py-8 border-t border-zinc-200/60 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-zinc-500">
-        <span>Dibuat oleh <strong class="text-zinc-700 font-semibold">Nabila Belva Fawnia</strong></span>
-        <span class="font-mono text-[11px] text-zinc-400">© 2026 — Open Utility</span>
+    <!-- Footer Otentik dengan Nama Lengkap -->
+    <footer class="w-full max-w-xl mx-auto px-6 py-8 border-t border-zinc-200/60 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <span>Dibuat oleh <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">Nabila Belva Fawnia</strong></span>
+        <span class="font-mono text-[11px] text-zinc-400 dark:text-zinc-500">© 2026 — Alloc.io</span>
     </footer>
 
-    <!-- Logika Skrip Manual (Clean & Human-written) -->
+    <!-- Skrip Utama -->
     <script>
-        // Kamus terjemahan ringan tanpa library eksternal
         const translationDict = {
             id: {
                 title: "Kalkulator Budget 50/30/20",
-                subtitle: "Hitung alokasi pengeluaran bulanan secara proporsional dan mudah.",
+                subtitle: "Hitung alokasi pengeluaran bulanan secara proporsional atau kustom.",
                 labelIncome: "Total Pendapatan Bulanan",
                 currency: "Rp",
-                placeholder: "Contoh: 5000000",
+                placeholder: "Contoh: 5.000.000",
                 btnText: "Hitung Alokasi",
                 resultHeading: "Hasil Alokasi Ideal",
                 cat1: "Kebutuhan Pokok",
@@ -131,14 +191,23 @@
                 desc2: "Nongkrong, hiburan, belanja",
                 cat3: "Tabungan & Investasi",
                 desc3: "Dana darurat, reksa dana, tabungan",
-                alertMsg: "Masukkan nominal pendapatan yang valid terlebih dahulu ya."
+                alertMsg: "Masukkan nominal pendapatan yang valid terlebih dahulu ya.",
+                modeStd: "Standar (50/30/20)",
+                modeCust: "Atur Sendiri (%)",
+                labelMode: "Mode Alokasi",
+                modeDescStd: "Standar (50 / 30 / 20)",
+                modeDescCust: "Kustom / Sesuai Keinginan",
+                lblSlider1: "Kebutuhan Pokok",
+                lblSlider2: "Keinginan",
+                lblSlider3: "Tabungan",
+                warnSlider: "Total persentase harus pas 100% ya!"
             },
             en: {
                 title: "50/30/20 Budget Calculator",
-                subtitle: "Calculate your monthly expense allocation proportionally and easily.",
+                subtitle: "Calculate your monthly expense allocation proportionally or custom.",
                 labelIncome: "Total Monthly Income",
                 currency: "$",
-                placeholder: "Example: 5000",
+                placeholder: "Example: 5,000",
                 btnText: "Calculate Allocation",
                 resultHeading: "Ideal Allocation Results",
                 cat1: "Needs",
@@ -147,14 +216,23 @@
                 desc2: "Dining out, entertainment, shopping",
                 cat3: "Savings & Investments",
                 desc3: "Emergency fund, mutual funds, savings",
-                alertMsg: "Please enter a valid income amount first."
+                alertMsg: "Please enter a valid income amount first.",
+                modeStd: "Standard (50/30/20)",
+                modeCust: "Custom (%)",
+                labelMode: "Allocation Mode",
+                modeDescStd: "Standard (50 / 30 / 20)",
+                modeDescCust: "Custom Allocation",
+                lblSlider1: "Needs",
+                lblSlider2: "Wants",
+                lblSlider3: "Savings",
+                warnSlider: "Total percentage must equal 100%!"
             },
             zh: {
                 title: "50/30/20 预算分配计算器",
-                subtitle: "轻松按比例计算您的每月开支分配方案。",
+                subtitle: "按比例或自定义计算您的每月开支分配方案。",
                 labelIncome: "每月总收入",
                 currency: "¥",
-                placeholder: "例如: 5000",
+                placeholder: "例如: 5,000",
                 btnText: "计算分配",
                 resultHeading: "理想分配结果",
                 cat1: "必要开销 (Needs)",
@@ -163,28 +241,130 @@
                 desc2: "聚餐、娱乐、购物",
                 cat3: "储蓄与投资 (Savings)",
                 desc3: "应急基金、基金、存款",
-                alertMsg: "请输入有效的收入金额。"
+                alertMsg: "请输入有效的收入金额。",
+                modeStd: "标准 (50/30/20)",
+                modeCust: "自定义 (%)",
+                labelMode: "分配模式",
+                modeDescStd: "标准比例 (50 / 30 / 20)",
+                modeDescCust: "自定义比例",
+                lblSlider1: "必要开销",
+                lblSlider2: "个人欲望",
+                lblSlider3: "储蓄投资",
+                warnSlider: "总百分比必须刚好等于 100%！"
             }
         };
 
         let activeLang = 'id';
         let cachedIncome = 0;
+        let allocationMode = 'standard';
+        let customPct1 = 50;
+        let customPct2 = 30;
+        let customPct3 = 20;
 
-        // Fungsi mengganti bahasa secara instan
+        // Format angka saat diketik di input (menambahkan titik ribuan otomatis)
+        function formatIncomeInput(inputElement) {
+            // Hapus semua karakter selain angka
+            let rawValue = inputElement.value.replace(/\D/g, '');
+            if (rawValue === '') {
+                inputElement.value = '';
+                return;
+            }
+            // Format ke pemisah ribuan titik
+            let formattedValue = new Intl.NumberFormat('id-ID').format(rawValue);
+            inputElement.value = formattedValue;
+        }
+
+        // Ambil nilai angka murni dari input yang berformat titik
+        function getCleanIncomeValue() {
+            const rawValue = document.getElementById('incomeInput').value;
+            if (!rawValue) return 0;
+            return parseFloat(rawValue.replace(/\./g, '')) || 0;
+        }
+
+        // Toggle Theme
+        function toggleTheme() {
+            const htmlEl = document.documentElement;
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlEl.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+
+        function setAllocationMode(mode) {
+            allocationMode = mode;
+            const btnStd = document.getElementById('mode-standard');
+            const btnCust = document.getElementById('mode-custom');
+            const slidersContainer = document.getElementById('customSlidersContainer');
+            const modeDesc = document.getElementById('ui-mode-desc');
+            const t = translationDict[activeLang];
+
+            if (mode === 'standard') {
+                btnStd.className = "py-2.5 px-3 text-xs font-medium rounded-xl border border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 transition-all text-center";
+                btnCust.className = "py-2.5 px-3 text-xs font-medium rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 transition-all text-center";
+                slidersContainer.classList.add('hidden');
+                modeDesc.innerText = t.modeDescStd;
+                customPct1 = 50; customPct2 = 30; customPct3 = 20;
+            } else {
+                btnCust.className = "py-2.5 px-3 text-xs font-medium rounded-xl border border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 transition-all text-center";
+                btnStd.className = "py-2.5 px-3 text-xs font-medium rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 transition-all text-center";
+                slidersContainer.classList.remove('hidden');
+                modeDesc.innerText = t.modeDescCust;
+                syncSlidersFromValues();
+            }
+
+            if (cachedIncome > 0) processCalculation();
+        }
+
+        function syncSlidersFromValues() {
+            document.getElementById('slider-1').value = customPct1;
+            document.getElementById('slider-2').value = customPct2;
+            document.getElementById('slider-3').value = customPct3;
+            document.getElementById('val-pct-1').innerText = customPct1 + '%';
+            document.getElementById('val-pct-2').innerText = customPct2 + '%';
+            document.getElementById('val-pct-3').innerText = customPct3 + '%';
+        }
+
+        function updateCustomSliders(changedIndex) {
+            let s1 = parseInt(document.getElementById('slider-1').value);
+            let s2 = parseInt(document.getElementById('slider-2').value);
+            let s3 = parseInt(document.getElementById('slider-3').value);
+
+            customPct1 = s1;
+            customPct2 = s2;
+            customPct3 = s3;
+
+            syncSlidersFromValues();
+
+            const total = s1 + s2 + s3;
+            const warnEl = document.getElementById('ui-slider-warning');
+            if (total !== 100) {
+                warnEl.classList.remove('hidden');
+                warnEl.innerText = `${translationDict[activeLang].warnSlider} (Total saat ini: ${total}%)`;
+            } else {
+                warnEl.classList.add('hidden');
+                if (cachedIncome > 0) processCalculation();
+            }
+        }
+
         function switchLanguage(langCode) {
             activeLang = langCode;
 
-            // Perbarui gaya tombol aktif
             ['id', 'en', 'zh'].forEach(code => {
                 const btnElement = document.getElementById(`btn-${code}`);
                 if (code === langCode) {
-                    btnElement.className = "px-3 py-1 rounded-md transition-all bg-white text-zinc-900 shadow-sm";
+                    btnElement.className = "px-3 py-1 rounded-md transition-all bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm";
                 } else {
-                    btnElement.className = "px-3 py-1 rounded-md transition-all text-zinc-600 hover:text-zinc-900";
+                    btnElement.className = "px-3 py-1 rounded-md transition-all text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100";
                 }
             });
 
-            // Terapkan teks ke elemen HTML
             const t = translationDict[langCode];
             document.getElementById('ui-title').innerText = t.title;
             document.getElementById('ui-subtitle').innerText = t.subtitle;
@@ -199,42 +379,53 @@
             document.getElementById('ui-desc-2').innerText = t.desc2;
             document.getElementById('ui-cat-3').innerText = t.cat3;
             document.getElementById('ui-desc-3').innerText = t.desc3;
+            document.getElementById('ui-label-mode').innerText = t.labelMode;
+            document.getElementById('mode-standard').innerText = t.modeStd;
+            document.getElementById('mode-custom').innerText = t.modeCust;
+            document.getElementById('ui-slider-1-label').innerText = t.lblSlider1;
+            document.getElementById('ui-slider-2-label').innerText = t.lblSlider2;
+            document.getElementById('ui-slider-3-label').innerText = t.lblSlider3;
 
-            // Jika hasil sudah pernah dihitung, perbarui format angkanya
-            if (cachedIncome > 0) {
-                renderValues(cachedIncome);
-            }
+            document.getElementById('ui-mode-desc').innerText = (allocationMode === 'standard') ? t.modeDescStd : t.modeDescCust;
+
+            if (cachedIncome > 0) renderValues(cachedIncome);
         }
 
-        // Fungsi utama perhitungan
         function processCalculation() {
-            const rawInput = document.getElementById('incomeInput').value;
-            const incomeValue = parseFloat(rawInput);
+            const incomeValue = getCleanIncomeValue();
 
             if (isNaN(incomeValue) || incomeValue <= 0) {
                 alert(translationDict[activeLang].alertMsg);
                 return;
             }
 
+            if (allocationMode === 'custom') {
+                const total = customPct1 + customPct2 + customPct3;
+                if (total !== 100) {
+                    alert(translationDict[activeLang].warnSlider);
+                    return;
+                }
+            }
+
             cachedIncome = incomeValue;
             renderValues(incomeValue);
-            
-            // Munculkan kotak hasil
             document.getElementById('resultContainer').classList.remove('hidden');
         }
 
-        // Kalkulasi alokasi dan pemformatan mata uang lokal
         function renderValues(amount) {
-            const needsAmount = amount * 0.50;
-            const wantsAmount = amount * 0.30;
-            const savingsAmount = amount * 0.20;
+            const needsAmount = amount * (customPct1 / 100);
+            const wantsAmount = amount * (customPct2 / 100);
+            const savingsAmount = amount * (customPct3 / 100);
+
+            document.getElementById('badge-pct-1').innerText = customPct1 + '%';
+            document.getElementById('badge-pct-2').innerText = customPct2 + '%';
+            document.getElementById('badge-pct-3').innerText = customPct3 + '%';
 
             document.getElementById('val-needs').innerText = formatToCurrency(needsAmount, activeLang);
             document.getElementById('val-wants').innerText = formatToCurrency(wantsAmount, activeLang);
             document.getElementById('val-savings').innerText = formatToCurrency(savingsAmount, activeLang);
         }
 
-        // Format angka ke mata uang sesuai bahasa yang dipilih
         function formatToCurrency(value, lang) {
             let localeTarget = 'id-ID';
             let currencyTarget = 'IDR';
