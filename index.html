@@ -37,8 +37,8 @@
 <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white transition-colors duration-200">
 
     <!-- Top Navigation / Controls Bar -->
-    <header class="w-full max-w-xl mx-auto px-6 pt-8 flex justify-between items-center">
-        <span class="text-xs font-mono font-medium tracking-wider text-zinc-400 dark:text-zinc-500 uppercase">budget.in // v1.4</span>
+    <header class="w-full max-w-4xl mx-auto px-6 pt-8 flex justify-between items-center">
+        <span class="text-xs font-mono font-medium tracking-wider text-zinc-400 dark:text-zinc-500 uppercase">budget.in // v2.0</span>
         
         <div class="flex items-center gap-2">
             <!-- Sound Effect Toggle Button -->
@@ -60,82 +60,94 @@
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="w-full max-w-xl mx-auto px-6 py-8 flex-grow">
+    <!-- Main Container (Responsive: Mobile Stacked, Desktop Side-by-Side Grid) -->
+    <main class="w-full max-w-4xl mx-auto px-6 py-10 flex-grow grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         
-        <!-- Heading Section -->
-        <div class="mb-8">
-            <h1 id="ui-title" class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Budget.in</h1>
-            <p id="ui-subtitle" class="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Hitung alokasi pengeluaran bulanan secara proporsional atau kustom.</p>
+        <!-- Kolom Kiri: Header & Input (Desktop 7 Kolom) -->
+        <div class="md:col-span-7 space-y-6">
+            <div>
+                <h1 id="ui-title" class="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">Budget.in</h1>
+                <p id="ui-subtitle" class="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Hitung alokasi pengeluaran bulanan secara proporsional atau kustom dengan mudah dan cepat.</p>
+            </div>
+
+            <!-- Calculator Card -->
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-sm p-6 sm:p-8 space-y-6 transition-colors duration-200">
+                
+                <!-- Input Field -->
+                <div>
+                    <label id="ui-label-income" for="incomeInput" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">Total Pendapatan Bulanan</label>
+                    <div class="relative flex items-center">
+                        <span id="ui-currency-symbol" class="absolute left-4 text-sm font-semibold text-zinc-400 dark:text-zinc-500">Rp</span>
+                        <input type="text" id="incomeInput" placeholder="Contoh: 5.000.000" oninput="handleIncomeInput(this)"
+                            class="w-full pl-12 pr-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-sm font-medium font-mono">
+                    </div>
+                </div>
+
+                <!-- Mode Alokasi -->
+                <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                    <div class="flex justify-between items-center mb-3">
+                        <label id="ui-label-mode" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Mode Alokasi</label>
+                        <span id="ui-mode-desc" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">Standar (50 / 30 / 20)</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setAllocationMode('standard')" id="mode-standard" class="py-2.5 px-3 text-xs font-medium rounded-xl border border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 transition-all text-center">
+                            Standar (50/30/20)
+                        </button>
+                        <button onclick="setAllocationMode('custom')" id="mode-custom" class="py-2.5 px-3 text-xs font-medium rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 transition-all text-center">
+                            Atur Sendiri (%)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Sliders -->
+                <div id="customSlidersContainer" class="hidden space-y-4 pt-2 bg-zinc-50/50 dark:bg-zinc-800/30 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span id="ui-slider-1-label" class="text-zinc-600 dark:text-zinc-400">Kebutuhan Pokok</span>
+                            <span id="val-pct-1" class="font-mono font-bold text-indigo-600 dark:text-indigo-400">50%</span>
+                        </div>
+                        <input type="range" id="slider-1" min="10" max="80" value="50" oninput="updateCustomSliders(1)" class="w-full accent-indigo-600 cursor-pointer">
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span id="ui-slider-2-label" class="text-zinc-600 dark:text-zinc-400">Keinginan</span>
+                            <span id="val-pct-2" class="font-mono font-bold text-amber-600 dark:text-amber-400">30%</span>
+                        </div>
+                        <input type="range" id="slider-2" min="5" max="60" value="30" oninput="updateCustomSliders(2)" class="w-full accent-amber-500 cursor-pointer">
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs font-medium">
+                            <span id="ui-slider-3-label" class="text-zinc-600 dark:text-zinc-400">Tabungan</span>
+                            <span id="val-pct-3" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">20%</span>
+                        </div>
+                        <input type="range" id="slider-3" min="5" max="60" value="20" oninput="updateCustomSliders(3)" class="w-full accent-emerald-500 cursor-pointer">
+                    </div>
+                    <p id="ui-slider-warning" class="text-[11px] text-amber-600 dark:text-amber-400 hidden">Total persentase harus pas 100% ya.</p>
+                </div>
+
+                <!-- Action Button -->
+                <button onclick="processCalculation()" id="ui-btn-calculate"
+                    class="w-full bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium py-3 rounded-xl transition-all text-sm shadow-sm active:scale-[0.99]">
+                    Hitung Alokasi
+                </button>
+
+            </div>
         </div>
 
-        <!-- Calculator Card -->
-        <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-sm p-6 sm:p-8 space-y-6 transition-colors duration-200">
-            
-            <!-- Input Field: Pendapatan -->
-            <div>
-                <label id="ui-label-income" for="incomeInput" class="block text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">Total Pendapatan Bulanan</label>
-                <div class="relative flex items-center">
-                    <span id="ui-currency-symbol" class="absolute left-4 text-sm font-semibold text-zinc-400 dark:text-zinc-500">Rp</span>
-                    <input type="text" id="incomeInput" placeholder="Contoh: 5.000.000" oninput="handleIncomeInput(this)"
-                        class="w-full pl-12 pr-4 py-3 bg-zinc-50/50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-sm font-medium font-mono">
-                </div>
+        <!-- Kolom Kanan: Hasil Perhitungan (Desktop 5 Kolom) -->
+        <div class="md:col-span-5 w-full">
+            <!-- Placeholder awal sebelum dihitung -->
+            <div id="emptyResultState" class="bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 p-8 text-center flex flex-col items-center justify-center h-full min-h-[300px]">
+                <svg class="w-10 h-10 text-zinc-300 dark:text-zinc-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                <p id="ui-empty-text" class="text-xs text-zinc-400 dark:text-zinc-500">Masukkan pendapatan dan klik tombol hitung untuk melihat hasil alokasi ideal.</p>
             </div>
-
-            <!-- Mode Alokasi -->
-            <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                <div class="flex justify-between items-center mb-3">
-                    <label id="ui-label-mode" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Mode Alokasi</label>
-                    <span id="ui-mode-desc" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">Standar (50 / 30 / 20)</span>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="setAllocationMode('standard')" id="mode-standard" class="py-2.5 px-3 text-xs font-medium rounded-xl border border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 transition-all text-center">
-                        Standar (50/30/20)
-                    </button>
-                    <button onclick="setAllocationMode('custom')" id="mode-custom" class="py-2.5 px-3 text-xs font-medium rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 transition-all text-center">
-                        Atur Sendiri (%)
-                    </button>
-                </div>
-            </div>
-
-            <!-- Custom Sliders -->
-            <div id="customSlidersContainer" class="hidden space-y-4 pt-2 bg-zinc-50/50 dark:bg-zinc-800/30 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                <div class="space-y-2">
-                    <div class="flex justify-between text-xs font-medium">
-                        <span id="ui-slider-1-label" class="text-zinc-600 dark:text-zinc-400">Kebutuhan Pokok</span>
-                        <span id="val-pct-1" class="font-mono font-bold text-indigo-600 dark:text-indigo-400">50%</span>
-                    </div>
-                    <input type="range" id="slider-1" min="10" max="80" value="50" oninput="updateCustomSliders(1)" class="w-full accent-indigo-600 cursor-pointer">
-                </div>
-
-                <div class="space-y-2">
-                    <div class="flex justify-between text-xs font-medium">
-                        <span id="ui-slider-2-label" class="text-zinc-600 dark:text-zinc-400">Keinginan</span>
-                        <span id="val-pct-2" class="font-mono font-bold text-amber-600 dark:text-amber-400">30%</span>
-                    </div>
-                    <input type="range" id="slider-2" min="5" max="60" value="30" oninput="updateCustomSliders(2)" class="w-full accent-amber-500 cursor-pointer">
-                </div>
-
-                <div class="space-y-2">
-                    <div class="flex justify-between text-xs font-medium">
-                        <span id="ui-slider-3-label" class="text-zinc-600 dark:text-zinc-400">Tabungan</span>
-                        <span id="val-pct-3" class="font-mono font-bold text-emerald-600 dark:text-emerald-400">20%</span>
-                    </div>
-                    <input type="range" id="slider-3" min="5" max="60" value="20" oninput="updateCustomSliders(3)" class="w-full accent-emerald-500 cursor-pointer">
-                </div>
-                <p id="ui-slider-warning" class="text-[11px] text-amber-600 dark:text-amber-400 hidden">Total persentase harus pas 100% ya.</p>
-            </div>
-
-            <!-- Action Button -->
-            <button onclick="processCalculation()" id="ui-btn-calculate"
-                class="w-full bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium py-3 rounded-xl transition-all text-sm shadow-sm active:scale-[0.99]">
-                Hitung Alokasi
-            </button>
 
             <!-- Results Section -->
-            <div id="resultContainer" class="hidden space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 fade-in">
-                <h2 id="ui-result-heading" class="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Hasil Alokasi Ideal</h2>
+            <div id="resultContainer" class="hidden bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-sm p-6 sm:p-8 space-y-4 fade-in">
+                <h2 id="ui-result-heading" class="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">Hasil Alokasi Ideal</h2>
                 
                 <!-- Category 1 -->
                 <div class="bg-zinc-50/60 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
@@ -167,14 +179,21 @@
                     <span id="val-savings" class="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 font-mono">0</span>
                 </div>
             </div>
-
         </div>
 
     </main>
 
-    <!-- Footer Otentik dengan Nama Lengkap -->
-    <footer class="w-full max-w-xl mx-auto px-6 py-8 border-t border-zinc-200/60 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+    <!-- Footer Otentik dengan Nama Lengkap & Tombol Saran/Aduan -->
+    <footer class="w-full max-w-4xl mx-auto px-6 py-8 border-t border-zinc-200/60 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
         <span>Dibuat oleh <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">Nabila Belva Fawnia</strong></span>
+        
+        <!-- Tombol Saran & Aduan yang mengarah ke email -->
+        <a href="mailto:nabilabelvafawnia@gmail.com?subject=Saran%20dan%20Aduan%20Budget.in" 
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-200/70 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-all font-medium">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            <span id="ui-feedback-btn">Saran & Aduan</span>
+        </a>
+
         <span class="font-mono text-[11px] text-zinc-400 dark:text-zinc-500">© 2026 — Budget.in</span>
     </footer>
 
@@ -183,7 +202,7 @@
         const translationDict = {
             id: {
                 title: "Budget.in",
-                subtitle: "Hitung alokasi pengeluaran bulanan secara proporsional atau kustom.",
+                subtitle: "Hitung alokasi pengeluaran bulanan secara proporsional atau kustom dengan mudah dan cepat.",
                 labelIncome: "Total Pendapatan Bulanan",
                 currency: "Rp",
                 placeholder: "Contoh: 5.000.000",
@@ -204,11 +223,13 @@
                 lblSlider1: "Kebutuhan Pokok",
                 lblSlider2: "Keinginan",
                 lblSlider3: "Tabungan",
-                warnSlider: "Total persentase harus pas 100% ya!"
+                warnSlider: "Total persentase harus pas 100% ya!",
+                emptyText: "Masukkan pendapatan dan klik tombol hitung untuk melihat hasil alokasi ideal.",
+                feedbackBtn: "Saran & Aduan"
             },
             en: {
                 title: "Budget.in",
-                subtitle: "Calculate your monthly expense allocation proportionally or custom.",
+                subtitle: "Calculate your monthly expense allocation proportionally or custom easily and quickly.",
                 labelIncome: "Total Monthly Income",
                 currency: "$",
                 placeholder: "Example: 5,000",
@@ -229,11 +250,13 @@
                 lblSlider1: "Needs",
                 lblSlider2: "Wants",
                 lblSlider3: "Savings",
-                warnSlider: "Total percentage must equal 100%!"
+                warnSlider: "Total percentage must equal 100%!",
+                emptyText: "Enter your income and click calculate to view the ideal allocation results.",
+                feedbackBtn: "Feedback & Support"
             },
             zh: {
                 title: "Budget.in",
-                subtitle: "按比例或自定义计算您的每月开支分配方案。",
+                subtitle: "轻松快速地按比例或自定义计算您的每月开支分配方案。",
                 labelIncome: "每月总收入",
                 currency: "¥",
                 placeholder: "例如: 5,000",
@@ -254,7 +277,9 @@
                 lblSlider1: "必要开销",
                 lblSlider2: "个人欲望",
                 lblSlider3: "储蓄投资",
-                warnSlider: "总百分比必须刚好等于 100%！"
+                warnSlider: "总百分比必须刚好等于 100%！",
+                emptyText: "请输入收入并点击计算按钮以查看理想的分配结果。",
+                feedbackBtn: "意见反馈"
             }
         };
 
@@ -266,7 +291,6 @@
         let customPct3 = 20;
         let soundEnabled = true;
 
-        // Web Audio API untuk Efek Suara Mekanis Real-Time (Tanpa file eksternal)
         let audioCtx = null;
 
         function initAudio() {
@@ -280,25 +304,18 @@
             try {
                 initAudio();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
-
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(600, audioCtx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.04);
-
                 gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
-
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.04);
-            } catch (e) {
-                // Ignore silent browser audio restrictions
-            }
+            } catch (e) {}
         }
 
         function playTypeSound() {
@@ -306,19 +323,14 @@
             try {
                 initAudio();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
-
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-
                 osc.type = 'triangle';
                 osc.frequency.setValueAtTime(800 + Math.random() * 200, audioCtx.currentTime);
-
                 gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.02);
             } catch (e) {}
@@ -335,7 +347,6 @@
             }
         }
 
-        // Input & Format Handler
         function handleIncomeInput(inputElement) {
             playTypeSound();
             let rawValue = inputElement.value.replace(/\D/g, '');
@@ -352,7 +363,6 @@
             return parseFloat(rawValue.replace(/\./g, '')) || 0;
         }
 
-        // Toggle Theme
         function toggleTheme() {
             playClickSound();
             const htmlEl = document.documentElement;
@@ -460,6 +470,8 @@
             document.getElementById('ui-slider-1-label').innerText = t.lblSlider1;
             document.getElementById('ui-slider-2-label').innerText = t.lblSlider2;
             document.getElementById('ui-slider-3-label').innerText = t.lblSlider3;
+            document.getElementById('ui-empty-text').innerText = t.emptyText;
+            document.getElementById('ui-feedback-btn').innerText = t.feedbackBtn;
 
             document.getElementById('ui-mode-desc').innerText = (allocationMode === 'standard') ? t.modeDescStd : t.modeDescCust;
 
@@ -485,6 +497,7 @@
 
             cachedIncome = incomeValue;
             renderValues(incomeValue);
+            document.getElementById('emptyResultState').classList.add('hidden');
             document.getElementById('resultContainer').classList.remove('hidden');
         }
 
