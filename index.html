@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50/30/20 Budget Calculator</title>
+    
+    <!-- Tailwind CSS v3 CDN (Ringan dan stabil untuk production statis) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Plus Jakarta Sans untuk keterbacaan optimal -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom font setup */
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Efek transisi halus manual */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-zinc-50 text-zinc-900 antialiased min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation / Language Bar -->
+    <header class="w-full max-w-xl mx-auto px-6 pt-8 flex justify-between items-center">
+        <span class="text-xs font-mono font-medium tracking-wider text-zinc-400 uppercase">util.tool</span>
+        
+        <!-- Toggle Bahasa -->
+        <div class="inline-flex bg-zinc-200/80 p-1 rounded-lg text-xs font-medium">
+            <button onclick="switchLanguage('id')" id="btn-id" class="px-3 py-1 rounded-md transition-all bg-white text-zinc-900 shadow-sm">ID</button>
+            <button onclick="switchLanguage('en')" id="btn-en" class="px-3 py-1 rounded-md transition-all text-zinc-600 hover:text-zinc-900">EN</button>
+            <button onclick="switchLanguage('zh')" id="btn-zh" class="px-3 py-1 rounded-md transition-all text-zinc-600 hover:text-zinc-900">中文</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-xl mx-auto px-6 py-8 flex-grow">
+        
+        <!-- Heading Section -->
+        <div class="mb-8">
+            <h1 id="ui-title" class="text-2xl font-bold tracking-tight text-zinc-900">Kalkulator Budget 50/30/20</h1>
+            <p id="ui-subtitle" class="text-sm text-zinc-500 mt-1">Hitung alokasi pengeluaran bulanan secara proporsional dan mudah.</p>
+        </div>
+
+        <!-- Calculator Card -->
+        <div class="bg-white rounded-2xl border border-zinc-200/80 shadow-sm p-6 sm:p-8 space-y-6">
+            
+            <!-- Input Field -->
+            <div>
+                <label id="ui-label-income" for="incomeInput" class="block text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-2">Total Pendapatan Bulanan</label>
+                <div class="relative flex items-center">
+                    <span id="ui-currency-symbol" class="absolute left-4 text-sm font-semibold text-zinc-400">Rp</span>
+                    <input type="number" id="incomeInput" placeholder="Contoh: 5000000" 
+                        class="w-full pl-12 pr-4 py-3 bg-zinc-50/50 border border-zinc-200 rounded-xl text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all text-sm font-medium">
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="processCalculation()" id="ui-btn-calculate"
+                class="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium py-3 rounded-xl transition-all text-sm shadow-sm active:scale-[0.99]">
+                Hitung Alokasi
+            </button>
+
+            <!-- Results Section (Hidden by default) -->
+            <div id="resultContainer" class="hidden space-y-4 pt-4 border-t border-zinc-100 fade-in">
+                <h2 id="ui-result-heading" class="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Hasil Alokasi Ideal</h2>
+                
+                <!-- 50% Needs -->
+                <div class="bg-zinc-50/60 p-4 rounded-xl border border-zinc-100 flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">50%</span>
+                        <p id="ui-cat-1" class="text-sm font-semibold text-zinc-800 mt-1">Kebutuhan Pokok</p>
+                        <p id="ui-desc-1" class="text-xs text-zinc-500">Makan, sewa, listrik, transport</p>
+                    </div>
+                    <span id="val-needs" class="text-sm sm:text-base font-bold text-zinc-900">0</span>
+                </div>
+
+                <!-- 30% Wants -->
+                <div class="bg-zinc-50/60 p-4 rounded-xl border border-zinc-100 flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">30%</span>
+                        <p id="ui-cat-2" class="text-sm font-semibold text-zinc-800 mt-1">Keinginan / Lifestyle</p>
+                        <p id="ui-desc-2" class="text-xs text-zinc-500">Nongkrong, hiburan, belanja</p>
+                    </div>
+                    <span id="val-wants" class="text-sm sm:text-base font-bold text-zinc-900">0</span>
+                </div>
+
+                <!-- 20% Savings -->
+                <div class="bg-zinc-50/60 p-4 rounded-xl border border-zinc-100 flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">20%</span>
+                        <p id="ui-cat-3" class="text-sm font-semibold text-zinc-800 mt-1">Tabungan & Investasi</p>
+                        <p id="ui-desc-3" class="text-xs text-zinc-500">Dana darurat, reksa dana, tabungan</p>
+                    </div>
+                    <span id="val-savings" class="text-sm sm:text-base font-bold text-zinc-900">0</span>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer dengan Tanda Kepemilikan Asli -->
+    <footer class="w-full max-w-xl mx-auto px-6 py-8 border-t border-zinc-200/60 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-zinc-500">
+        <span>Dibuat oleh <strong class="text-zinc-700 font-semibold">Nabila Belva Fawnia</strong></span>
+        <span class="font-mono text-[11px] text-zinc-400">© 2026 — Open Utility</span>
+    </footer>
+
+    <!-- Logika Skrip Manual (Clean & Human-written) -->
+    <script>
+        // Kamus terjemahan ringan tanpa library eksternal
+        const translationDict = {
+            id: {
+                title: "Kalkulator Budget 50/30/20",
+                subtitle: "Hitung alokasi pengeluaran bulanan secara proporsional dan mudah.",
+                labelIncome: "Total Pendapatan Bulanan",
+                currency: "Rp",
+                placeholder: "Contoh: 5000000",
+                btnText: "Hitung Alokasi",
+                resultHeading: "Hasil Alokasi Ideal",
+                cat1: "Kebutuhan Pokok",
+                desc1: "Makan, sewa, listrik, transport",
+                cat2: "Keinginan / Lifestyle",
+                desc2: "Nongkrong, hiburan, belanja",
+                cat3: "Tabungan & Investasi",
+                desc3: "Dana darurat, reksa dana, tabungan",
+                alertMsg: "Masukkan nominal pendapatan yang valid terlebih dahulu ya."
+            },
+            en: {
+                title: "50/30/20 Budget Calculator",
+                subtitle: "Calculate your monthly expense allocation proportionally and easily.",
+                labelIncome: "Total Monthly Income",
+                currency: "$",
+                placeholder: "Example: 5000",
+                btnText: "Calculate Allocation",
+                resultHeading: "Ideal Allocation Results",
+                cat1: "Needs",
+                desc1: "Groceries, rent, utilities, transport",
+                cat2: "Wants / Lifestyle",
+                desc2: "Dining out, entertainment, shopping",
+                cat3: "Savings & Investments",
+                desc3: "Emergency fund, mutual funds, savings",
+                alertMsg: "Please enter a valid income amount first."
+            },
+            zh: {
+                title: "50/30/20 预算分配计算器",
+                subtitle: "轻松按比例计算您的每月开支分配方案。",
+                labelIncome: "每月总收入",
+                currency: "¥",
+                placeholder: "例如: 5000",
+                btnText: "计算分配",
+                resultHeading: "理想分配结果",
+                cat1: "必要开销 (Needs)",
+                desc1: "房租、伙食、水电、交通",
+                cat2: "个人欲望 (Wants)",
+                desc2: "聚餐、娱乐、购物",
+                cat3: "储蓄与投资 (Savings)",
+                desc3: "应急基金、基金、存款",
+                alertMsg: "请输入有效的收入金额。"
+            }
+        };
+
+        let activeLang = 'id';
+        let cachedIncome = 0;
+
+        // Fungsi mengganti bahasa secara instan
+        function switchLanguage(langCode) {
+            activeLang = langCode;
+
+            // Perbarui gaya tombol aktif
+            ['id', 'en', 'zh'].forEach(code => {
+                const btnElement = document.getElementById(`btn-${code}`);
+                if (code === langCode) {
+                    btnElement.className = "px-3 py-1 rounded-md transition-all bg-white text-zinc-900 shadow-sm";
+                } else {
+                    btnElement.className = "px-3 py-1 rounded-md transition-all text-zinc-600 hover:text-zinc-900";
+                }
+            });
+
+            // Terapkan teks ke elemen HTML
+            const t = translationDict[langCode];
+            document.getElementById('ui-title').innerText = t.title;
+            document.getElementById('ui-subtitle').innerText = t.subtitle;
+            document.getElementById('ui-label-income').innerText = t.labelIncome;
+            document.getElementById('ui-currency-symbol').innerText = t.currency;
+            document.getElementById('incomeInput').placeholder = t.placeholder;
+            document.getElementById('ui-btn-calculate').innerText = t.btnText;
+            document.getElementById('ui-result-heading').innerText = t.resultHeading;
+            document.getElementById('ui-cat-1').innerText = t.cat1;
+            document.getElementById('ui-desc-1').innerText = t.desc1;
+            document.getElementById('ui-cat-2').innerText = t.cat2;
+            document.getElementById('ui-desc-2').innerText = t.desc2;
+            document.getElementById('ui-cat-3').innerText = t.cat3;
+            document.getElementById('ui-desc-3').innerText = t.desc3;
+
+            // Jika hasil sudah pernah dihitung, perbarui format angkanya
+            if (cachedIncome > 0) {
+                renderValues(cachedIncome);
+            }
+        }
+
+        // Fungsi utama perhitungan
+        function processCalculation() {
+            const rawInput = document.getElementById('incomeInput').value;
+            const incomeValue = parseFloat(rawInput);
+
+            if (isNaN(incomeValue) || incomeValue <= 0) {
+                alert(translationDict[activeLang].alertMsg);
+                return;
+            }
+
+            cachedIncome = incomeValue;
+            renderValues(incomeValue);
+            
+            // Munculkan kotak hasil
+            document.getElementById('resultContainer').classList.remove('hidden');
+        }
+
+        // Kalkulasi alokasi dan pemformatan mata uang lokal
+        function renderValues(amount) {
+            const needsAmount = amount * 0.50;
+            const wantsAmount = amount * 0.30;
+            const savingsAmount = amount * 0.20;
+
+            document.getElementById('val-needs').innerText = formatToCurrency(needsAmount, activeLang);
+            document.getElementById('val-wants').innerText = formatToCurrency(wantsAmount, activeLang);
+            document.getElementById('val-savings').innerText = formatToCurrency(savingsAmount, activeLang);
+        }
+
+        // Format angka ke mata uang sesuai bahasa yang dipilih
+        function formatToCurrency(value, lang) {
+            let localeTarget = 'id-ID';
+            let currencyTarget = 'IDR';
+
+            if (lang === 'en') {
+                localeTarget = 'en-US';
+                currencyTarget = 'USD';
+            } else if (lang === 'zh') {
+                localeTarget = 'zh-CN';
+                currencyTarget = 'CNY';
+            }
+
+            return new Intl.NumberFormat(localeTarget, {
+                style: 'currency',
+                currency: currencyTarget,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+    </script>
+
+</body>
+</html>
